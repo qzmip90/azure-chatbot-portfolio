@@ -67,4 +67,6 @@ def index():
     return "✅ Azure chatbot backend is running!"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    print("🚀 Flask app is starting...")
+    app.run(debug=True, host="0.0.0.0", port=8000)
+
