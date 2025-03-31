@@ -65,7 +65,7 @@ def feedback():
 
 @app.route("/", methods=["GET"])
 def index():
-    return "✅ Azure chatbot backend is running!"
+    return "<h2>✅ Azure chatbot backend is running!<h2>"
 
 if __name__ == "__main__":
     print("🚀 Flask app is starting...")
