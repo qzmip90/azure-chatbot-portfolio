@@ -29,11 +29,12 @@ container_client = blob_service_client.get_container_client(os.getenv("AZURE_STO
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
-    messages = data.get("messages")
-
+    logging.info("⚡️ /chat endpoint triggered")
     try:
-        logging.info(f"Received messages: {messages}")
+        data = request.get_json(force=True)
+        logging.info(f"Received JSON: {data}")
+        messages = data.get("messages")
+
         response = client.chat.completions.create(
             model=deployment_name,
             messages=messages
@@ -41,7 +42,7 @@ def chat():
         reply = response.choices[0].message.content
         return jsonify({"response": reply})
     except Exception as e:
-        logging.error(f"OpenAI Error: {str(e)}")
+        logging.error(f"🔥 Error in /chat: {str(e)}")
         return jsonify({"error": "Something went wrong"}), 500
 
 @app.route("/feedback", methods=["POST"])
