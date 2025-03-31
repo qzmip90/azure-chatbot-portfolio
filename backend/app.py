@@ -62,5 +62,9 @@ def feedback():
         logging.error(f"Feedback error: {str(e)}")
         return jsonify({"error": "Failed to store feedback"}), 500
 
+@app.route("/", methods=["GET"])
+def index():
+    return "✅ Azure chatbot backend is running!"
+
 if __name__ == "__main__":
     app.run(debug=True)
