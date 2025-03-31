@@ -1,2 +1,17 @@
+# Ignore Python virtual environment
+venv/
+.venv/
+
+# Ignore environment variables
 backend/.env
-backend/.env
+
+# Bytecode & __pycache__
+__pycache__/
+*.py[cod]
+
+# VS Code & other editors
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
