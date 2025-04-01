@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quest Bot 4o</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: sans-serif;
+      background: #fff;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 600px;
+      height: 700px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: #6393fb;
+      color: #0d2f76;
+      padding: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .chat {
+      flex-grow: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .message {
+      padding: 0.8rem 1rem;
+      border-radius: 15px;
+      max-width: 80%;
+      line-height: 1.5;
+    }
+    .bot {
+      background: #f0f0f0;
+      align-self: flex-start;
+      position: relative;
+    }
+    .user {
+      background: #bacffb;
+      align-self: flex-end;
+    }
+    .feedback {
+      margin-top: 6px;
+      font-size: 14px;
+    }
+    .feedback img {
+      width: 18px;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    .input-area {
+      display: flex;
+      padding: 1rem;
+      gap: 0.5rem;
+      border-top: 1px solid #eee;
+    }
+    input {
+      flex-grow: 1;
+      padding: 0.7rem 1rem;
+      font-size: 16px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #1351d6;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">Quest Bot 4o</div>
+    <div class="chat" id="chatBody">
+      <div class="message bot">Hello! Ask me anything.</div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Ask a question..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatBody = document.getElementById("chatBody");
+    const input = document.getElementById("userInput");
+
+    let chatHistory = [
+      { role: "system", content: "You are a helpful assistant." }
+    ];
+
+    async function sendMessage() {
+      const message = input.value.trim();
+      if (!message) return;
+      appendMessage("user", message);
+      input.value = "";
+
+      chatHistory.push({ role: "user", content: message });
+
+      const res = await fetch("http://127.0.0.1:5000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chatHistory })
+      });
+
+      const data = await res.json();
+      if (!data.response) {
+        appendMessage("bot", "❌ Sorry, something went wrong.");
+        return;
+      }
+
+      chatHistory.push({ role: "assistant", content: data.response });
+      appendMessage("bot", data.response, message);
+    }
+
+    function appendMessage(role, content, userMessage = null) {
+      const messageDiv = document.createElement("div");
+      messageDiv.className = message ${role};
+      messageDiv.innerHTML = marked.parse(content);
+
+      chatBody.appendChild(messageDiv);
+
+      if (role === "bot" && userMessage) {
+        const feedback = document.createElement("div");
+        feedback.className = "feedback";
+        feedback.innerHTML = 
+          <img src="https://img.icons8.com/material-rounded/24/000000/thumb-up.png" onclick="sendFeedback('${userMessage}', \${content}\, 'up')"/>
+          <img src="https://img.icons8.com/material-rounded/24/000000/thumbs-down.png" onclick="sendFeedback('${userMessage}', \${content}\, 'down')"/>
+        ;
+        messageDiv.appendChild(feedback);
+      }
+
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    async function sendFeedback(message, response, rating) {
+      await fetch("http://127.0.0.1:5000/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, response, rating })
+      });
+    }
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
