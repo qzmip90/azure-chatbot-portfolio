@@ -33,19 +33,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: backend/
-
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure Web App
+      - name: Deploy entire project to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'chatbot-api-dev'
-          package: backend/
+          slot-name: 'Production'
+          package: .
