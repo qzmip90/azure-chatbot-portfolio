@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from azure.storage.blob import BlobServiceClient
 from openai import AzureOpenAI
 
-app = Flask(__name__, static_folder="../frontend", static_url_path="/")
+app = Flask(__name__, static_folder="../frontend", static_url_path="")
 CORS(app)
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -63,14 +63,12 @@ def feedback():
         logging.error(f"Feedback error: {str(e)}")
         return jsonify({"error": "Failed to store feedback"}), 500
 
-# ✅ Serve the index.html file
-@app.route("/", methods=["GET"])
+@app.route("/")
 def index():
     return send_from_directory(app.static_folder, "index.html")
 
-# ✅ Serve static files (JS, CSS)
-@app.route("/<path:path>", methods=["GET"])
-def serve_static(path):
+@app.route("/<path:path>")
+def static_files(path):
     return send_from_directory(app.static_folder, path)
 
 if __name__ == "__main__":
