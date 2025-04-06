@@ -4,8 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quest Bot 4o</title>
+
+  <!-- Load Markdown parser -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="/styles.css" />
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
@@ -15,9 +19,11 @@
     </div>
     <div class="input-area">
       <input type="text" id="userInput" placeholder="Ask a question..." />
-      <button onclick="sendMessage()">Send</button>
+      <button id="sendBtn">Send</button>
     </div>
   </div>
-  <script src="/script.js"></script>
+
+  <!-- Attach JS at the end of the body -->
+  <script src="script.js"></script>
 </body>
 </html>
