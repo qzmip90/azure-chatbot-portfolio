@@ -6,7 +6,7 @@ from azure.storage.blob import BlobServiceClient
 from openai import AzureOpenAI
 
 # Use absolute path for frontend
-frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+frontend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend"))
 print(f"📂 Serving frontend from: {frontend_path}")
 app = Flask(__name__, static_folder=frontend_path, static_url_path="")
 CORS(app)
