@@ -4,3 +4,5 @@ openai>=1.0.0
 python-dotenv
 azure-storage-blob
 gunicorn
+opencensus-ext-azure
+opencensus-ext-requests
