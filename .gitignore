@@ -2,9 +2,6 @@
 venv/
 .venv/
 
-# Ignore environment variables
-backend/.env
-
 # Bytecode & __pycache__
 __pycache__/
 *.py[cod]
@@ -15,3 +12,6 @@ __pycache__/
 
 # OS generated files
 .DS_Store
+
+#Ignore the variables
+.env
