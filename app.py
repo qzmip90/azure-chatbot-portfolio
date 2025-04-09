@@ -18,6 +18,8 @@ CORS(app)
 # Load environment variables
 load_dotenv()
 
+print("🔐 AI Connection:", os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
+
 # Logging setup
 logger = logging.getLogger(__name__)
 logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")))
@@ -53,6 +55,7 @@ def chat():
         # ✅ Log user input and bot reply
         logger.info("User input: %s", message)
         logger.info("Bot response: %s", reply)
+        logger.info("🔥 App startup log test!")
 
         return jsonify({"response": reply})
     except Exception as e:
