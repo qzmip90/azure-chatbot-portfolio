@@ -1,4 +1,5 @@
 from opencensus.ext.azure.log_exporter import AzureLogHandler
+from opencensus.common.transports.async_ import AsyncTransport
 import logging
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -22,7 +23,10 @@ print("🔐 AI Connection:", os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
 
 # Logging setup
 logger = logging.getLogger(__name__)
-logger.addHandler(AzureLogHandler(connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")))
+logger.addHandler(AzureLogHandler(
+    connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"),
+    transport=AsyncTransport
+))
 logging.basicConfig(level=logging.INFO)
 
 # OpenAI config
