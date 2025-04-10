@@ -8,28 +8,33 @@ from dotenv import load_dotenv
 from azure.storage.blob import BlobServiceClient
 from openai import AzureOpenAI
 
-# Use absolute path for frontend
+# Load environment variables
+load_dotenv(override=True)
+
+# === Flask Setup ===
 frontend_path = os.path.join(os.getcwd(), "frontend")
 print(f"📂 Serving frontend from: {frontend_path}")
 
-# Flask setup
 app = Flask(__name__, static_folder=frontend_path, static_url_path="")
 CORS(app)
 
-# Load environment variables
-load_dotenv()
+# === Logging Setup ===
+connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+if not connection_string:
+    raise ValueError("❌ Missing APPLICATIONINSIGHTS_CONNECTION_STRING in .env")
 
-print("🔐 AI Connection:", os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
-
-# Logging setup
 logger = logging.getLogger(__name__)
-logger.addHandler(AzureLogHandler(
-    connection_string=os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"),
-    transport=AsyncTransport
-))
+logger.addHandler(
+    AzureLogHandler(
+        connection_string=connection_string,
+        transport=AsyncTransport
+    )
+)
 logging.basicConfig(level=logging.INFO)
 
-# OpenAI config
+logger.info("✅ Logger initialized and test log fired🔥.")
+
+# === Azure OpenAI Setup ===
 client = AzureOpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
     api_version="2023-07-01-preview",
@@ -37,12 +42,15 @@ client = AzureOpenAI(
 )
 deployment_name = os.getenv("DEPLOYMENT_NAME")
 
-# Azure Blob config
+# === Azure Blob Setup ===
 blob_service_client = BlobServiceClient.from_connection_string(
     f"DefaultEndpointsProtocol=https;AccountName={os.getenv('AZURE_STORAGE_ACCOUNT_NAME')};AccountKey={os.getenv('AZURE_STORAGE_ACCOUNT_KEY')};EndpointSuffix=core.windows.net"
 )
-container_client = blob_service_client.get_container_client(os.getenv("AZURE_STORAGE_CONTAINER_NAME"))
+container_client = blob_service_client.get_container_client(
+    os.getenv("AZURE_STORAGE_CONTAINER_NAME")
+)
 
+# === Routes ===
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json(force=True)
@@ -56,10 +64,10 @@ def chat():
         )
         reply = response.choices[0].message.content
 
-        # ✅ Log user input and bot reply
+        # Log user message & reply
         logger.info("User input: %s", message)
         logger.info("Bot response: %s", reply)
-        logger.info("🔥 App startup log test!")
+        logger.info("🔥 Log test entry!")
 
         return jsonify({"response": reply})
     except Exception as e:
@@ -84,16 +92,15 @@ def feedback():
         logger.error(f"/feedback error: {str(e)}")
         return jsonify({"error": "Failed to store feedback"}), 500
 
-# Serve index.html
 @app.route("/")
 def serve_index():
     return send_from_directory(app.static_folder, "index.html")
 
-# Serve other static assets
 @app.route("/<path:path>")
 def static_files(path):
     return send_from_directory(app.static_folder, path)
 
+# === Run App ===
 if __name__ == "__main__":
     print("🚀 Flask app is starting...")
-    app.run(debug=True, host="0.0.0.0", port=80)
+    app.run(host="0.0.0.0", port=80)
