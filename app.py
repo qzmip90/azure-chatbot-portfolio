@@ -1,6 +1,6 @@
+import logging
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.common.transports.async_ import AsyncTransport
-import logging
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os, uuid, json
@@ -8,31 +8,32 @@ from dotenv import load_dotenv
 from azure.storage.blob import BlobServiceClient
 from openai import AzureOpenAI
 
-# Load environment variables
+# === Load environment variables ===
 load_dotenv(override=True)
 
 # === Flask Setup ===
 frontend_path = os.path.join(os.getcwd(), "frontend")
 print(f"📂 Serving frontend from: {frontend_path}")
-
 app = Flask(__name__, static_folder=frontend_path, static_url_path="")
 CORS(app)
 
 # === Logging Setup ===
+logging.basicConfig(level=logging.INFO)  # Setup before adding handlers
 connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+
 if not connection_string:
     raise ValueError("❌ Missing APPLICATIONINSIGHTS_CONNECTION_STRING in .env")
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 logger.addHandler(
-    AzureLogHandler(
-        connection_string=connection_string,
-        transport=AsyncTransport
-    )
+    AzureLogHandler(connection_string=connection_string, transport=AsyncTransport)
 )
-logging.basicConfig(level=logging.INFO)
 
+# 🔥 Logging verification
+print("👀 Testing logs at top level")
 logger.info("✅ Logger initialized and test log fired🔥.")
+logger.info("📢 Global log at module level")
 
 # === Azure OpenAI Setup ===
 client = AzureOpenAI(
@@ -42,13 +43,11 @@ client = AzureOpenAI(
 )
 deployment_name = os.getenv("DEPLOYMENT_NAME")
 
-# === Azure Blob Setup ===
+# === Azure Blob Storage Setup ===
 blob_service_client = BlobServiceClient.from_connection_string(
     f"DefaultEndpointsProtocol=https;AccountName={os.getenv('AZURE_STORAGE_ACCOUNT_NAME')};AccountKey={os.getenv('AZURE_STORAGE_ACCOUNT_KEY')};EndpointSuffix=core.windows.net"
 )
-container_client = blob_service_client.get_container_client(
-    os.getenv("AZURE_STORAGE_CONTAINER_NAME")
-)
+container_client = blob_service_client.get_container_client(os.getenv("AZURE_STORAGE_CONTAINER_NAME"))
 
 # === Routes ===
 @app.route("/chat", methods=["POST"])
@@ -64,11 +63,8 @@ def chat():
         )
         reply = response.choices[0].message.content
 
-        # Log user message & reply
         logger.info("User input: %s", message)
         logger.info("Bot response: %s", reply)
-        logger.info("🔥 Log test entry!")
-
         return jsonify({"response": reply})
     except Exception as e:
         logger.error(f"/chat error: {str(e)}")
@@ -99,9 +95,6 @@ def serve_index():
 @app.route("/<path:path>")
 def static_files(path):
     return send_from_directory(app.static_folder, path)
-
-print("👀 Testing logs at top level")
-logger.info("📢 Global log at module level")
 
 # === Run App ===
 if __name__ == "__main__":
