@@ -100,6 +100,9 @@ def serve_index():
 def static_files(path):
     return send_from_directory(app.static_folder, path)
 
+print("👀 Testing logs at top level")
+logger.info("📢 Global log at module level")
+
 # === Run App ===
 if __name__ == "__main__":
     print("🚀 Flask app is starting...")
